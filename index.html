@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + Lit + TS</title>
+    <!-- <script type="module" src="/src/ia-search-main.ts"></script> -->
+    <style>
+      html {
+        font-size: 10px; /* This is to match petabox's base font size */
+      }
+
+      body {
+        background: #41d0fc;
+      }
+      form {
+        display: block;
+        padding: 25px;
+        color: var(--iaux-search-widget-text-color, #000);
+        width: 700px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 10px;
+      }
+      #input-search {
+        width: 70%;
+      }
+      #search-btn {
+        padding: 10px;
+        background: #009cff;
+        border: none;
+        border-radius: 3px;
+        color: #fff;
+        margin: 5px;
+        float: right;
+      }
+      input[type="text"] {
+        padding: 10px;
+        margin: 5px;
+        display: inline-block;
+        border: none;
+        background: #f1f1f1;
+      }
+
+      input[type="text"]:focus {
+        background-color: #ddd;
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import { html, render } from "lit-html";
+      import "./src/ia-search-main";
+
+      var queryParam = decodeURIComponent(window.location.search);
+      queryParam = new URLSearchParams(queryParam).get("query");
+
+      const title = "Advanced Search Option";
+      render(
+        html`
+          <form action="" role="search" method="get">
+            <h1>${title}</h1>
+            <input
+              type="text"
+              id="input-search"
+              value="${queryParam}"
+              placeholder="Please enter search query"
+            />
+            <input type="submit" id="search-btn" value="Advance Search" />
+          </form>
+
+          <ia-search-main title="Advanced Search Option" query="${queryParam}">
+          </ia-search-main>
+        `,
+        document.body
+      );
+    </script>
+  </body>
+</html>
