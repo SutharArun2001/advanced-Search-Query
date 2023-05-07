@@ -1,0 +1,21 @@
+{
+  "name": "iaux-search",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "advanced-search-query": "^5.1.1",
+    "lit": "^2.6.1",
+    "lit-html": "^2.7.3",
+    "yarn": "^1.22.19"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.2",
+    "vite": "^4.3.2"
+  }
+}
