@@ -20,7 +20,7 @@ export class IaSearchMain extends LitElement {
   searchField = ["name", "creator", "title", "description"];
 
   @property()
-  searchOption = [["contains" ,"true"], ["is not contains", "false"]];
+  searchOption = [["contains", "true"], ["is not contains", "false"]];
 
 
   // @query(".add-field") private addFieldButton!: HTMLButtonElement;
@@ -51,8 +51,8 @@ export class IaSearchMain extends LitElement {
     var arr = this.query.split(/AND|OR/);
     arr.map((data) => {
       let str = data.split(':');
-      let key : String = str[0].trim();
-      let isNegated = key[0] === '-' ? 'false' :'true';
+      let key: String = str[0].trim();
+      let isNegated = key[0] === '-' ? 'false' : 'true';
       key = key.replace('-', '');
       let value = str[1].trim().slice(1, -1);
       const field = document.createElement("div");
@@ -72,12 +72,12 @@ export class IaSearchMain extends LitElement {
       this.searchContainer?.appendChild(field);
 
       field.querySelector(".delete-field")?.addEventListener("click", () => {
-            this.deleteSearchField(field);
-          });
-      
-          field.querySelector(".add-field")?.addEventListener("click", () => {
-            this.addSearchField();
-          });
+        this.deleteSearchField(field);
+      });
+
+      field.querySelector(".add-field")?.addEventListener("click", () => {
+        this.addSearchField();
+      });
       return `<li>${key} : ${value} ${isNegated}</li>`;
 
 
@@ -236,7 +236,7 @@ export class IaSearchMain extends LitElement {
    * To append options in select Field select box
    * @returns {string}
    */
-  addSearchFieldOption(key :String): string {
+  addSearchFieldOption(key: String): string {
     var options = "";
     if (key) {
       this.searchField.map(
@@ -259,9 +259,9 @@ export class IaSearchMain extends LitElement {
     var options = "";
     if (isNegated) {
       this.searchOption.map(
-        (item ) => (
+        (item) => (
           options += `<option value="${item[1]}" ${item[1] === isNegated ? 'selected' : ''}>${item[0]}</option>`
-          )
+        )
       );
     } else {
       this.searchOption.map(
