@@ -53,22 +53,22 @@
     <script type="module">
       import { html, render } from "lit-html";
       import "./src/ia-search-main";
-
+      // search?query=title%3A%28arun%29%20AND%20creator%3A%28kumar%29%20AND%20description%3A%28the%29
       var queryParam = decodeURIComponent(window.location.search);
       queryParam = new URLSearchParams(queryParam).get("query");
-
       const title = "Advanced Search Option";
       render(
         html`
-          <form action="" role="search" method="get">
+          <form action="" role="search method="get">
             <h1>${title}</h1>
             <input
               type="text"
+              name="query"
               id="input-search"
               value="${queryParam}"
               placeholder="Please enter search query"
             />
-            <input type="submit" id="search-btn" value="Advance Search" />
+            <input type="submit"id="search-btn" />
           </form>
 
           <ia-search-main title="Advanced Search Option" query="${queryParam}">

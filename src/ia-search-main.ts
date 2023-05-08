@@ -1,4 +1,4 @@
-import { LitElement, css, html } from "lit";
+import { LitElement, TemplateResult, css, html } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
 import advancedSearchQuery from "advanced-search-query";
 
@@ -12,20 +12,31 @@ export class IaSearchMain extends LitElement {
 
   @property({ type: Object }) parasedQueryToPck = {};
 
+  @property({ type: String }) searchQuery = '';
 
-  @property({ type: Array })
-  AllKeyValues = []
+  @property({ type: Array }) AllKeyValues = []
 
   @property()
-  searchField = ["name", "creator", "title", "description"];
+  year = ["1940", "1941", "1942", "1943", "1944", "1945", "1946", "1947", "1948", "1949", "1950", "1951", "1952", "1953", "1954", "1955", "1956", "1957", "1958", "1959", "1960", "1961", "1962", "1963", "1964", "1965", "1966", "1967", "1968", "1969", "1970", "1971", "1972", "1973", "1974", "1975", "1976", "1977", "1978", "1979", "1980", "1981", "1982", "1983", "1984", "1985", "1986", "1987", "1988", "1989", "1990", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022"];
+
+  @property()
+  months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  @property()
+  date = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"];
+
+  @property()
+  searchField = ["name", "creator", "title", "description", "collection", "date"];
 
   @property()
   searchOption = [["contains", "true"], ["is not contains", "false"]];
 
 
   // @query(".add-field") private addFieldButton!: HTMLButtonElement;
-  @query('#input-search') private inputSearchField!: HTMLInputElement;
+  // @query('#input-search') private inputSearchField!: HTMLInputElement;
+  @query('#queryForm') private myForm!: HTMLFormElement;
   @query("#search-field-container") private searchContainer!: HTMLElement;
+  @query("#search-btn-submit") private formSubmitBtn!: HTMLElement;
   // private deleteFieldButton!: HTMLElement;
 
   constructor() {
@@ -33,11 +44,15 @@ export class IaSearchMain extends LitElement {
     this.parasedQuery = [];
     this.query = '';
     this.AllKeyValues = [];
+    this.searchQuery = this.query;
   }
 
   firstUpdated() {
-    this.getKeyValue()
+    this.searchQuery = this.query;
+
+    this.getKeyValue();
     // this.inputSearchField.value = this.query;
+    // this.myForm.onsubmit = this.submitForm
     // this.addSearchField();
     // this.deleteFieldButton.onclick = this.deleteSearchField;
     // this.addFieldButton.onclick = this.addSearchField;
@@ -46,42 +61,11 @@ export class IaSearchMain extends LitElement {
 
   }
 
-  getKeyValue() {
-    console.log(this.query);
-    var arr = this.query.split(/AND|OR/);
-    arr.map((data) => {
-      let str = data.split(':');
-      let key: String = str[0].trim();
-      let isNegated = key[0] === '-' ? 'false' : 'true';
-      key = key.replace('-', '');
-      let value = str[1].trim().slice(1, -1);
-      const field = document.createElement("div");
-      field.classList.add("search-fields");
-      field.innerHTML = `
-      <select id="select-field" ><option>Select field</option>
-        ${this.addSearchFieldOption(key)}
-      </select>
-      <select id="select-condition"><option>Select condition</option>
-        ${this.addSearchFieldCondition(isNegated)}
-      </select>
-      <input type="text" value="${value}" placeholder="Please enter search query" />
-      <button class="add-field">&#43;</button>
-      <button class="delete-field">Delete</button>
-    `;
-
-      this.searchContainer?.appendChild(field);
-
-      field.querySelector(".delete-field")?.addEventListener("click", () => {
-        this.deleteSearchField(field);
-      });
-
-      field.querySelector(".add-field")?.addEventListener("click", () => {
-        this.addSearchField();
-      });
-      return `<li>${key} : ${value} ${isNegated}</li>`;
-
-
-    })
+  formSubmit() {
+    let query = encodeURIComponent(this.searchQuery);
+    console.log(this.searchQuery)
+    console.log(query)
+    window.location.href = `search?query=${query}`
   }
 
   static styles = css`
@@ -156,7 +140,7 @@ export class IaSearchMain extends LitElement {
     button {
       background-color: #04aa6d;
       color: white;
-      padding: 5px;
+      padding: 10px;
       margin: 5px;
       border: none;
       cursor: pointer;
@@ -213,152 +197,167 @@ export class IaSearchMain extends LitElement {
 
   /**
    * to Delete field from html and from search input box
-   * @param field
+   * @param field | fields
    */
   deleteSearchField(field: HTMLElement) {
-
-    var searchString = this.parasedQuery.join(' ').toString();
-    this.parasedQueryToPck = advancedSearchQuery(searchString);
-    console.log(field)
-    let keyword = (field.querySelector('#select-field') as HTMLSelectElement).value;
-    let value = (field.querySelector('input') as HTMLInputElement).value;
-    let select_condition = (field.querySelector('#select-condition') as HTMLSelectElement).value;
-
-    keyword = (select_condition == 'is not contains') ? '-' + keyword : keyword
-    // console.log(`value:- ` + keyword);
-    // console.log(`value:- ` + value);
-    this.inputSearchField.value = this.parasedQueryToPck.removeKeyword(keyword, value).toString()
-
+    console.log("delete Field")
+    // var searchString = this.parasedQuery.join(' ').toString();
+    // console.log(searchString);
+    // this.parasedQueryToPck = advancedSearchQuery(searchString);
+    // console.log(this.parasedQueryToPck);
+    // let select_condition = (field.querySelector('.select-condition') as HTMLSelectElement).value;
+    // let keyword = (field.querySelector('.select-field') as HTMLSelectElement).value;
+    // keyword = (select_condition == 'false') ? '-' + keyword : keyword
+    // let value = (field.querySelector('input') as HTMLInputElement).value;
+    // console.log(this.inputSearchField.value)
+    // console.log(this.parasedQueryToPck.removeKeyword(keyword,value).toString());
+    // this.inputSearchField.value = this.parasedQueryToPck.removeKeyword(keyword, value).toString().replace(' ', ' AND ');
+    this.setSearchQuery();
     field.remove();
+    this.setSearchQuery();
   }
 
   /**
    * To append options in select Field select box
    * @returns {string}
    */
-  addSearchFieldOption(key: String): string {
-    var options = "";
-    if (key) {
-      this.searchField.map(
-        (item) => (options += `<option value="${item}" ${key === item ? 'selected' : ''}>${item}</option>`)
+  addSearchFieldOption(key: string = '') {
+    return this.searchField
+      .map(
+        item =>
+          `<option value="${item}" ${key === item ? 'selected' : ''}>${item}</option>`
       );
-    } else {
-      this.searchField.map(
-        (item) => (options += `<option value="${item}">${item}</option>`)
-      );
-    }
-    return options;
   }
 
   /**
    * To append options in condition select box
    * @returns {string}
    */
-  addSearchFieldCondition(isNegated): string {
-    console.log(" condition is " + isNegated)
-    var options = "";
-    if (isNegated) {
-      this.searchOption.map(
-        (item) => (
-          options += `<option value="${item[1]}" ${item[1] === isNegated ? 'selected' : ''}>${item[0]}</option>`
-        )
+  addSearchFieldCondition(isNegated: string = '') {
+    return this.searchOption
+      .map(
+        item =>
+          `<option value="${item[1]}" ${item[1] === isNegated ? 'selected' : ''}>${item[0]}</option>`
       );
-    } else {
-      this.searchOption.map(
-        (item) => (options += `<option value="${item[1]}">${item[0]}</option>`)
-      );
-    }
-    return options;
   }
 
+  /**
+  * function get to set fields according to url
+  */
+  getKeyValue() {
+    console.log(`query= ` + this.query);
+    var arr = this.query.split(/AND|OR/);
+    console.log(`arr= ` + arr);
+    arr.map((data) => {
+      let str = data.split(':');
+      let key: string = str[0].trim();
+      let isNegated: string = key[0] === '-' ? 'false' : 'true';
+      let value = str[1].trim().replace(/["'()]/g,'');
+
+      key = key.replace('-', '');
+      if (this.searchField.includes(key)) {
+        if(key === 'date'){
+          console.log(value.split('-'))
+          let selectDate = this.addDateSearchField();
+          selectDate = selectDate.querySelector('.select-month').value;
+          selectDate = selectDate.querySelector('.select-year').value;
+          selectDate = selectDate.querySelector('.select-date').value;
+          console.dir(selectDate);
+          return false;
+        }
+        const field = document.createElement("div");
+        field.classList.add("search-fields");
+        field.innerHTML = `
+        <select class="select-field" >
+          ${this.addSearchFieldOption(key)}
+        </select>
+        <select class="select-condition">
+          ${this.addSearchFieldCondition(isNegated)}
+        </select>
+        <input type="text" class="searchValue" value="${value}" placeholder="Please enter search query" />
+        <button class="add-field">&#43;</button>
+        <button class="delete-field">Delete</button>
+      `;
+
+        this.searchContainer?.appendChild(field);
+
+        field.querySelector(".select-field")?.addEventListener("change", () => {
+          this.setSearchQuery();
+        });
+        field.querySelector(".searchValue")?.addEventListener("change", () => {
+          this.setSearchQuery();
+        });
+        field.querySelector(".select-condition")?.addEventListener("change", () => {
+          this.setSearchQuery();
+        });
+
+        field.querySelector(".delete-field")?.addEventListener("click", () => {
+          this.deleteSearchField(field);
+        });
+
+        field.querySelector(".add-field")?.addEventListener("click", () => {
+          this.addSearchField();
+        });
+      }
+    })
+  }
+
+  /**
+   * function for set value of fields
+   */
   setSearchQuery() {
     // this.getKeyValue()
-
-    this.parasedQuery = [];
+    this.parasedQuery   = [];
     var searchContainers = this.searchContainer.querySelectorAll(".search-fields");
     searchContainers.forEach((element) => {
-      let select_field = (element.querySelector('#select-field') as HTMLInputElement).value;
-      let select_condition = (element.querySelector('#select-condition') as HTMLInputElement).value;
+      let select_field = (element.querySelector('.select-field') as HTMLInputElement).value;
+      let select_condition = (element.querySelector('.select-condition') as HTMLInputElement).value;
       let select_value = element.querySelector('input')?.value;
 
-      console.log(select_field)
-      console.log(select_condition)
-      console.log(select_value)
+      // console.log(select_field, select_condition, select_value);
 
-      // if (select_field === "none" || select_condition == "none" || select_value == "") {
-      // } else {
-      //   const searchQToShow = `${(select_condition == 'is not contains') ? '-' + select_field : select_field}:${select_value}`;
-      //   this.parasedQuery.push(searchQToShow);
-      //   this.inputSearchField.value = this.parasedQuery.join(' ');
-      // }
+      if (select_field === "none" || select_value == "") {
+      } else {
+        var searchQToShow = `${(select_condition === 'false') ? '-' + select_field : select_field}:(${select_value})`;
+        this.parasedQuery.push(searchQToShow);
+        // this.inputSearchField.value = this.parasedQuery.join(' AND ');
+        this.searchQuery = this.parasedQuery.join(' AND ')
+      }
     });
-    // console.log(this.searchQuery);
-    var searchString = this.parasedQuery.join(' ').toString();
-    // console.log(searchString);
+    var searchString = this.parasedQuery.join(' AND ').toString();
+    console.log(searchString);
     this.parasedQueryToPck = advancedSearchQuery(searchString);
-    // const typ = advancedSearchQuery('to:me -from:joe@mixmax.com foobar1 -foobar2');
-    // const typ = advancedSearchQuery('creator:aa -name:ss ');
-    // console.log("getTexts")
-    // console.log(this.parasedQueryToPck.getTexts());
-    // console.log("toObject")
-    // console.log(this.parasedQueryToPck.toObject());
-    // console.log("getText")
-    // console.log(this.parasedQueryToPck.getText());
-    // console.log("toString")
-    // console.log(this.parasedQueryToPck.toString());
-    // console.log("getKeywords")
-    // console.log(this.parasedQueryToPck.getKeywords());
-    // console.log("removeKeywords")
-    // console.log(this.parasedQueryToPck.removeKeyword('creator','aa').toString());
+    console.log(this.parasedQuery);
 
-    // console.log(this.parasedQueryToPck.getKeywords());
-    // console.log(this.parasedQueryToPck.toString());
-    // console.log(this.parasedQueryToPck.toString());
   }
 
-  // addSearchField() {
-
-  //   const field = document.createElement("div");
-  //   field.classList.add("search-fields");
-  //   field.innerHTML = `
-  //     <select id="select-field" ><option>Select field</option>
-  //       ${this.addSearchFieldOption()}
-  //     </select>
-  //     <select id="select-condition"><option>Select condition</option>
-  //       ${this.addSearchFieldCondition()}
-  //     </select>
-  //     <input type="text" placeholder="Please enter search query" />
-  //     <button class="add-field">&#43;</button>
-  //     <button class="delete-field">Delete</button>
-  //   `;
-
-  //   this.searchContainer?.appendChild(field);
-
-  //   field.querySelector(".delete-field")?.addEventListener("click", () => {
-  //     this.deleteSearchField(field);
-  //   });
-
-  //   field.querySelector(".add-field")?.addEventListener("click", () => {
-  //     this.addSearchField();
-  //   });
-  // }
   addSearchField() {
+    console.log("adding Fields")
     const field = document.createElement("div");
     field.classList.add("search-fields");
     field.innerHTML = `
-      <select id="select-field" ><option>Select field</option>
+      <select class="select-field" >
         ${this.addSearchFieldOption()}
       </select>
-      <select id="select-condition"><option>Select condition</option>
+      <select class="select-condition">
         ${this.addSearchFieldCondition()}
       </select>
-      <input type="text" placeholder="Please enter search query" />
+      <input type="text" class="searchValue" placeholder="Please enter search query" />
       <button class="add-field">&#43;</button>
       <button class="delete-field">Delete</button>
     `;
+    console.log(field)
 
     this.searchContainer?.appendChild(field);
-
+    field.querySelector(".select-field")?.addEventListener("change", () => {
+      this.setSearchQuery();
+    });
+    field.querySelector(".select-condition")?.addEventListener("change", () => {
+      this.setSearchQuery();
+    });
+    field.querySelector(".searchValue")?.addEventListener("change", () => {
+      this.setSearchQuery();
+    });
     field.querySelector(".delete-field")?.addEventListener("click", () => {
       this.deleteSearchField(field);
     });
@@ -368,36 +367,104 @@ export class IaSearchMain extends LitElement {
     });
   }
 
+  /**
+   * get list of year 
+   * @returns {HTMLElement} 
+   */
+  get getYears() {
+    return this.year
+      .map(
+        (item) =>
+          `<option value="${item}">${item}</option>`
+      );
+  }
+  /**
+   * get list of month 
+   * @returns {HTMLElement} 
+   */
+  get getMonths() {
+    return this.months
+      .map(
+        (item) =>
+          `<option value="${item}">${item}</option>`
+      );
+  }
+  /**
+   * get list of Dates 
+   * @returns {HTMLElement} 
+   */
+  get getDates() {
+    return this.date
+      .map(
+        (item) =>
+          `<option value="${item}">${item}</option>`
+      );
+  }
+  
+  addDateSearchField(){
+    const field = document.createElement("div");
+    field.classList.add("search-fields");
+    field.innerHTML = `
+      <select class="select-field" >
+        ${this.addSearchFieldOption()}
+      </select>
+      <select class="select-year" id="year" name="year">
+        <option value="none">year</option>
+        ${this.getYears}
+      </select>
+      <select class="select-month" id="month" name="month">
+        <option value="none">month</option>
+        ${this.getMonths}
+      </select>
+      <select class="select-day" id="day" name="day">
+        <option value="">day</option>
+        ${this.getDates}
+      </select>
+      <input type="text" class="searchValue" placeholder="Please enter search query" />
+      <button class="add-field">&#43;</button>
+      <button class="delete-field">Delete</button>
+    `;
+    console.log(field)
+    this.searchContainer?.appendChild(field);
+    
+    field.querySelector(".delete-field")?.addEventListener("click", () => {
+      this.deleteSearchField(field);
+    });
+    
+    field.querySelector(".add-field")?.addEventListener("click", () => {
+      this.addSearchField();
+    });
+    return field;
+  }
   render() {
-
-    // ${  this.AllKeyValues.map((keys,value) => {
-    //   console.log(keys);
-    //   console.log(value);
-    //   <label>
-    //   <input type="checkbox" checked="checked" name="remember" style="margin-bottom:15px"> Remember me
-    //   </label>
-
-    //     <select id="select-field"><option value='none'>Select field</option>
-    //       ${this.searchField.map((item) => html`<option value="${item}">${item}</option>`)}
-    //     </select>
-    //     <select id="select-condition"><option value='none' >Select condition</option>
-    //     ${this.searchOption.map((item) => html`<option value="${item}">${item}</option>`)}
-    //     </select>
-    //     <input type="text" placeholder="Please enter search query" />
-    //     <button @click=${this.addSearchField} class ="add-field">&#43;</button>
-    //     <button class="delete-field">Delete</button>
-    //   </div>
-    // `;
-    // })}
+    // <form action="" id="queryForm" method="get">
+    //   <input type="text" name ="query" id="input-search" placeholder="Please enter search query"/>
+    //   <button type="submit">Apply</button>
+    // </form>
+    // <select class="select-field" ><option value="none">Select field</option>
+    // ${this.addSearchFieldOption()}
+    // </select>
+    // <select class="form-select" id="year" name="year">
+    //   <option value="none">year</option>
+    //   ${this.getYears}
+    // </select>
+    // <select class="form-select" id="month" name="month">
+    //   <option value="none">month</option>
+    //   ${this.getMonths}
+    // </select>
+    // <select class="form-select" id="day" name="day">
+    //   <option value="">day</option>
+    //   ${this.getDates}
+    // </select>
     return html`
     <div id="search-field-container">
-        <h1>Select fields</h1>
-    </div>
-    <div class="btn-section">
-      <button class="cancel-btn">Cancel</button>
-      <button  id="search-btn" @click="${this.setSearchQuery}">Apply</button>
-    </div>
-
-    `;
+    <h1>Select fields</h1>
+    ${this.addDateSearchField()}
+      </div>
+      <div class="btn-section">
+        <button class="cancel-btn">Cancel</button>
+        <button  id="search-btn" @click="${this.formSubmit}">Apply</button>
+      </div>
+        `;
   }
 }
