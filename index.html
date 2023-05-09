@@ -24,7 +24,7 @@
         border-radius: 10px;
       }
       #input-search {
-        width: 70%;
+        width: 80%;
       }
       #search-btn {
         padding: 10px;
@@ -68,10 +68,13 @@
               value="${queryParam}"
               placeholder="Please enter search query"
             />
-            <input type="submit"id="search-btn" />
+            <input type="submit" id="search-btn" />
           </form>
 
-          <ia-search-main title="Advanced Search Option" query="${queryParam}">
+          <ia-search-main 
+            title="Advanced Search Option" 
+            query="${queryParam}"
+          >
           </ia-search-main>
         `,
         document.body
