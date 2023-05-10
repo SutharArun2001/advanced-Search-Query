@@ -10,7 +10,6 @@ export class IaSearchMain extends LitElement {
   @property({ type: String }) searchQuery = '';
 
   @property({ type: Array }) parasedQuery = [];
-  @property({ type: Array }) AllKeyValues = []
 
   @property({ type: Object }) parasedQueryToPck = {};
 
@@ -24,7 +23,7 @@ export class IaSearchMain extends LitElement {
   date = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"];
 
   @property()
-  searchField = ["name", "creator", "title", "description", "collection", "date"];
+  searchField = ["name", "creator", "title", "description", "collection", "date", "date range"];
 
   @property()
   searchOption = [["contains", "true"], ["is not contains", "false"]];
@@ -41,13 +40,13 @@ export class IaSearchMain extends LitElement {
     super();
     this.parasedQuery = [];
     this.query = '';
-    this.AllKeyValues = [];
     this.searchQuery = this.query;
   }
 
   firstUpdated() {
     this.searchQuery = this.query;
     this.getKeyValue();
+    // this.addDateRangeSearchField();
     // this.inputSearchField.value = this.query;
     // this.myForm.onsubmit = this.submitForm
     // this.addSearchField();
@@ -65,17 +64,17 @@ export class IaSearchMain extends LitElement {
     console.log(query)
     window.location.href = `search?query=${query}`
 
-      // var form = document.createElement("form");
-      // form.method = "get";
-      // form.action = "";
-      // var search = document.createElement("input");
-      // search.defaultValue=`${query}`;
-      // search.name="query";
-      // form.appendChild(search);
-      // console.error(form.submit())
-      // form.submit();
+    // var form = document.createElement("form");
+    // form.method = "get";
+    // form.action = "";
+    // var search = document.createElement("input");
+    // search.defaultValue=`${query}`;
+    // search.name="query";
+    // form.appendChild(search);
+    // console.error(form.submit())
+    // form.submit();
 
-    }
+  }
 
   static styles = css`
     :host {
@@ -173,6 +172,18 @@ export class IaSearchMain extends LitElement {
       display: flex;
       justify-content:space-between
     }
+
+    .search-fields .range{
+      display:flex;
+      align-items:center;
+    }
+    .search-fields .range select{
+      max-width:80px;
+    }
+    .search-fields .range h3{
+      margin:0;
+    }
+
     /* Extra styles for the cancel button */
     .cancelbtn {
       padding: 14px 20px;
@@ -210,7 +221,6 @@ export class IaSearchMain extends LitElement {
   /**
    * to Delete field from html and from search input box
    * @param field | fields
-   * @returns {HTMLElement}
    */
   deleteSearchField(field: HTMLElement) {
     console.log("delete Field")
@@ -232,9 +242,9 @@ export class IaSearchMain extends LitElement {
   /**
    * To append options in select Field select box
    * @param {string} key - select option if key has value 
-   * @returns {string}
+   * @returns {HTMLOptionElement}
    */
-  addSearchFieldOption(key: string = '') {
+  addSearchFieldOption(key?: string) {
     return this.searchField
       .map(
         item =>
@@ -244,10 +254,10 @@ export class IaSearchMain extends LitElement {
 
   /**
    * To append options in condition select box
-   * @param {string} keyword - select option if keyword has value 
-   * @returns {string}
+   * @param {string} isNegated - select option if keyword has value
+   * @returns {HTMLOptionElement}
    */
-  addSearchFieldCondition(isNegated: string = '') {
+  addSearchFieldCondition(isNegated?: string) {
     return this.searchOption
       .map(
         item =>
@@ -261,71 +271,32 @@ export class IaSearchMain extends LitElement {
   getKeyValue() {
     console.log(`query= ` + this.query);
     var arr = this.query.split(/AND|OR/);
-    console.log(`arr= ` + arr);
-    arr.map(
-      (data) => {
-      let str = data.split(':');
-      let key: string = str[0].trim();
-      let isNegated: string = key[0] === '-' ? 'false' : 'true';
-      let value = str[1].trim().replace(/["'()]/g, '');
-
-      key = key.replace('-', '');
-      if (this.searchField.includes(key)) {
-        if (key === 'date') {
-          this.addDateSearchField(value);
-        }else{
-
-        const field = document.createElement("div");
-        field.classList.add("search-fields");
-        field.innerHTML = `<div>
-        <select class="select-field" >
-          ${this.addSearchFieldOption(key)}
-        </select>
-        <select class="select-condition">
-          ${this.addSearchFieldCondition(isNegated)}
-        </select>
-        <input type="text" class="searchValue" value="${value}" placeholder="Please enter search query" />
-        </div>
-        <div>
-          <button class="add-field">&#43;</button>
-          <button class="delete-field">Delete</button>
-        </div>
-      `;
-
-        this.searchContainer?.appendChild(field);
-        field.querySelector(".select-field")?.addEventListener("change", () => {
-          if((field.querySelector('.select-field') as HTMLInputElement).value === 'date'){
-            this.deleteSearchField(field);
-            this.addDateSearchField();
-          }else{
-            this.deleteSearchField(field);
-            this.addSearchField();
+    console.log(arr[0] === '');
+    if (arr[0] === '') {
+      this.addSearchField();
+    } else {
+      arr.map(
+        (data) => {
+          let str = data.split(':');
+          let key: string = str[0].trim();
+          let isNegated: string = key[0] === '-' ? 'false' : 'true';
+          let value = str[1].trim().replace(/[[\]"'()/]/g,'');
+          console.log(value)
+          key = key.replace('-', '');
+          if (this.searchField.includes(key)) {
+            if (key === 'date') {
+              if (/TO/.test(value)) {
+                console.log(value);
+                this.addDateRangeSearchField(value);
+              } else {
+                this.addDateSearchField(value);
+              }
+            } else {
+              this.addSearchField(key,isNegated,value)
+            }
           }
-        });
-        // field.querySelector("select")?.addEventListener("change", () => {
-        //     this.setSearchQuery();
-        //   });
-
-        // field.querySelector(".select-field")?.addEventListener("change", () => {
-        //   this.setSearchQuery();
-        // });
-        // field.querySelector(".searchValue")?.addEventListener("change", () => {
-        //   this.setSearchQuery();
-        // });
-        // field.querySelector(".select-condition")?.addEventListener("change", () => {
-        //   this.setSearchQuery();
-        // });
-
-        field.querySelector(".delete-field")?.addEventListener("click", () => {
-          this.deleteSearchField(field);
-        });
-
-        field.querySelector(".add-field")?.addEventListener("click", () => {
-          this.addSearchField();
-        });
-      }
-      }
-    })
+        })
+    }
   }
 
   /**
@@ -334,32 +305,62 @@ export class IaSearchMain extends LitElement {
   setSearchQuery() {
     // this.getKeyValue()
     this.parasedQuery = [];
-    var searchContainers = this.searchContainer.querySelectorAll(".search-fields");
-    searchContainers.forEach(
+    var selectFields = this.searchContainer.querySelectorAll(".search-fields");
+    selectFields.forEach(
       (element) => {
-      let select_field = (element.querySelector('.select-field') as HTMLInputElement).value;
-      let select_value = element.querySelector('input')?.value;
-      
-      if (select_field === "none" || select_value === "") {
-      } else {
-        if(select_field === 'date'){
-          let year = (element.querySelector('.select-year') as HTMLInputElement).value;
-          let month = (element.querySelector('.select-month') as HTMLInputElement).value;
-          let date = (element.querySelector('.select-date') as HTMLInputElement).value;
-          if(year === "none" || month === "none" || date === "none"){
-            }else{
-            var searchQToShow = `date:${year}-${month}-${date}`;
-          }
-          // console.log(searchQToShow);
-        }else{
-          let select_condition = (element.querySelector('.select-condition') as HTMLInputElement).value;
+        let select_field = (element.querySelector('.select-field') as HTMLInputElement).value;
+        let select_value = element.querySelector('input')?.value;
+
+        if (select_field === "none" || select_value === "") {
+        } else {
+          if (select_field === 'date') {
+            
+            const year = (element.querySelector('.select-year') as HTMLInputElement).value;
+            const month = (element.querySelector('.select-month') as HTMLInputElement).value;
+            const date = (element.querySelector('.select-date') as HTMLInputElement).value;
+
+            if (
+              year === "none" || 
+              month === "none" || 
+              date === "none"
+            ) {
+              return null;
+            } else {
+              var searchQToShow = `date:${year}-${month}-${date}`;
+            }
+            // console.log(searchQToShow);
+          } else if (select_field === 'date range') {
+
+            const yearFrom = (element.querySelector('.select-year-from') as HTMLInputElement).value;
+            const monthFrom = (element.querySelector('.select-month-from') as HTMLInputElement).value;
+            const dateFrom = (element.querySelector('.select-date-from') as HTMLInputElement).value;
+            const yearTo = (element.querySelector('.select-year-to') as HTMLInputElement).value;
+            const monthTo = (element.querySelector('.select-month-to') as HTMLInputElement).value;
+            const dateTo = (element.querySelector('.select-date-to') as HTMLInputElement).value;
+
+            if (
+              yearFrom === "none" || 
+              monthFrom === "none" || 
+              dateFrom === "none" || 
+              yearTo === "none" || 
+              monthTo === "none" || 
+              dateTo === "none"
+            ) {
+              return null;
+            } else {
+              var searchQToShow = `date:[${yearFrom}-${monthFrom}-${dateFrom} TO ${yearTo}-${monthTo}-${dateTo}]`;
+            }
+          } else {
+            const select_condition = (element.querySelector('.select-condition') as HTMLInputElement).value;
             var searchQToShow = `${(select_condition === 'false') ? '-' + select_field : select_field}:(${select_value})`;
+            this.parasedQuery.push(searchQToShow);
+            console.log("sss")
+            console.log(this.parasedQuery);
+          }
+          // this.inputSearchField.value = this.parasedQuery.join(' AND ');
+          this.searchQuery = this.parasedQuery.join(' AND ')
         }
-        this.parasedQuery.push(searchQToShow);
-        // this.inputSearchField.value = this.parasedQuery.join(' AND ');
-        this.searchQuery = this.parasedQuery.join(' AND ')
-      }
-    });
+      });
     var searchString = this.parasedQuery.join(' AND ').toString();
     console.log(searchString);
     this.parasedQueryToPck = advancedSearchQuery(searchString);
@@ -367,39 +368,27 @@ export class IaSearchMain extends LitElement {
 
   }
 
+  
+
   /**
-   * add new fields
+   * to add event onChange | onClick
+   * @param field - add on change events
    */
-  addSearchField() {
-    console.log("adding Fields")
-    const field = document.createElement("div");
-    field.classList.add("search-fields");
-    field.innerHTML = `<div>
-      <select class="select-field" >
-        ${this.addSearchFieldOption()}
-      </select>
-      <select class="select-condition">
-        ${this.addSearchFieldCondition()}
-      </select>
-      <input type="text" class="searchValue" placeholder="Please enter search query" />
-      </div>
-      <div>
-      <button class="add-field">&#43;</button>
-      <button class="delete-field">Delete</button>
-      </div>
-    `;
-    console.log(field)
-    this.searchContainer?.appendChild(field);
-    
-    // field.querySelector("select")?.addEventListener("change", () => {
-    //   this.setSearchQuery();
-    // });
-    // field.querySelector(".select-condition")?.addEventListener("change", () => {
-    //   this.setSearchQuery();
-    // });
-    // field.querySelector(".searchValue")?.addEventListener("change", () => {
-    //   this.setSearchQuery();
-    // });
+  setEventListeners(field: HTMLElement) {
+    field.querySelector(".select-field")?.addEventListener("change", () => {
+      if ((field.querySelector('.select-field') as HTMLInputElement).value === 'date') {
+        console.log(field)
+        this.addDateSearchField();
+        this.deleteSearchField(field);
+      } else if ((field.querySelector('.select-field') as HTMLInputElement).value === 'date range') {
+        this.deleteSearchField(field);
+        this.addDateRangeSearchField();
+      } else {
+        // this.deleteSearchField(field);
+        // this.addSearchField();
+      }
+    });
+
     field.querySelector(".delete-field")?.addEventListener("click", () => {
       this.deleteSearchField(field);
     });
@@ -412,39 +401,74 @@ export class IaSearchMain extends LitElement {
   /**
    * get list of year 
    * @param {string} value - select option if value match with item
-   * @returns {HTMLElement} 
+   * @returns {HTMLOptionElement}
    */
-  getYears(value:string) {
+  getYears(value?: string){
     return this.year
       .map(
         (item) =>
-          `<option value="${item}" ${value === item ? 'selected' : ''}>${item}</option>`
+          `<option value="${item}" ${value?.trim() === item ? 'selected' : ''}>${item}</option>`
       );
   }
+  
   /**
    * get list of month 
    * @param {string} value - select option if value match with item
-   * @returns {HTMLElement} 
+   * @returns {HTMLOptionElement}
    */
-  getMonths(value:string) {
-    console.log(value)
+  getMonths(value?: String) {
     return this.months
       .map(
         (item) =>
-          `<option value="${item}" ${value === item? 'selected' : ''}>${item}</option>`
+          `<option value="${item}" ${value?.trim() === item ? 'selected' : ''}>${item}</option>`
       );
   }
+
   /**
    * get list of Dates 
    * @param {string} value - select option if value match with item
-   * @returns {HTMLElement} 
+   * @returns {HTMLOptionElement} 
+   * 
    */
-  getDates(value:string) {
+  getDates(value?: String) {
+    console.log(value)
     return this.date
       .map(
         (item) =>
-          `<option value="${item}" ${value === item ? 'selected' : ''}>${item}</option>`
+          `<option value="${item}" ${value?.trim() === item ? 'selected' : ''}>${item}</option>`
       );
+  }
+
+  /**
+   * add new fields
+   * @param {string} key - select field value 
+   * @param {string} isNegated - select condition field contain/is not contain
+   * @param {string} value - input field text
+   * @returns {HTMLElement}
+   */
+  addSearchField(key?: string, isNegated?: string,value?: string): HTMLElement {
+    console.log("adding Fields")
+    const field = document.createElement("div");
+    field.classList.add("search-fields");
+    field.innerHTML = `<div>
+      <select class="select-field" >
+        ${this.addSearchFieldOption(key)}
+      </select>
+      <select class="select-condition">
+        ${this.addSearchFieldCondition(isNegated)}
+      </select>
+      <input type="text" class="searchValue" value="${value ? value :''}" placeholder="Please enter search query" />
+    </div>
+    ${this.actionButton}
+    `;
+
+    // to add onChange Evnents
+    this.searchContainer?.appendChild(field);
+
+    console.log(field)
+    this.setEventListeners(field)
+
+    return field;
   }
 
   /**
@@ -473,38 +497,84 @@ export class IaSearchMain extends LitElement {
         ${this.getDates(splitValue[2])}
       </select>
       </div>
-      <div>
-      <button class="add-field">&#43;</button>
-      <button class="delete-field">Delete</button>
-      </div>
+      ${this.actionButton}
     `;
     console.log(field)
     this.searchContainer?.appendChild(field);
 
-    field.querySelector(".select-field")?.addEventListener("change", () => {
-      if((field.querySelector('.select-field') as HTMLInputElement).value === 'date'){
-        this.deleteSearchField(field);
-        this.addDateSearchField();
-      }else{
-        this.deleteSearchField(field);
-        this.addSearchField();
-      }
-    });
+    // to add onChange Evnents
+    this.setEventListeners(field);
 
-    // field.querySelectorAll("select").forEach.addEventListener("change", () => {
-    //   console.log("ss")
-    //   this.setSearchQuery();
-    // });
-
-    field.querySelector(".delete-field")?.addEventListener("click", () => {
-      this.deleteSearchField(field);
-    });
-
-    field.querySelector(".add-field")?.addEventListener("click", () => {
-      this.addSearchField();
-    });
     return field;
   }
+
+  /**
+   * add date search field with range
+   * @param {string} value - contain date range
+   * @returns {HTMLElement}
+   */
+  addDateRangeSearchField(value: String = ''): HTMLElement {
+    const [from , to] = value.split('TO');
+    let yearFrom, monthFrom, dateFrom = '';
+    let yearTo, monthTo, dateTo = '';
+
+    if (from !== '') {
+      let DateFrom = from.split('-');
+      let DateTo = to.split('-');
+      [yearFrom, monthFrom, dateFrom] = [DateFrom[0], DateFrom[1], DateFrom[2]];
+      [yearTo, monthTo, dateTo] = [DateTo[0], DateTo[1], DateTo[2]];
+    }
+    const key = 'date range'
+    const field = document.createElement("div");
+    field.classList.add("search-fields");
+    field.innerHTML = `<div class="range">
+      <select class="select-field" >
+        ${this.addSearchFieldOption(key)}
+      </select>
+      <select class="select-year-from" id="yearFrom" name="yearFrom">
+        <option value="none">year</option>
+        ${this.getYears(yearFrom)}
+      </select>
+      <select class="select-month-from" id="monthFrom" name="monthFrom">
+        <option value="none">month</option>
+        ${this.getMonths(monthFrom)}
+      </select>
+      <select class="select-date-from" id="dateFrom" name="dateFrom">
+        <option value="none">date</option>
+        ${this.getDates(dateFrom)}
+      </select>
+      <h3>TO</h3>
+      <select class="select-year-to" id="yearTo" name="yearTo">
+        <option value="none">year</option>
+        ${this.getYears(yearTo)}
+      </select>
+      <select class="select-month-to" id="monthTos" name="monthTos">
+        <option value="none">month</option>
+        ${this.getMonths(monthTo)}
+      </select>
+      <select class="select-date-to" id="dateTo" name="dateTo">
+        <option value="none">date</option>
+        ${this.getDates(dateTo)}
+      </select>
+    </div>
+      ${this.actionButton}
+    `;
+    console.log(field)
+    this.searchContainer?.appendChild(field);
+
+    // to add  Evnents
+    this.setEventListeners(field);
+
+    return field;
+  }
+
+  get actionButton(){
+    return `<div>
+    <button class="add-field">&#43;</button>
+    <button class="delete-field">Delete</button>
+    </div>`;
+  }
+
   render() {
     // <form action="" id="queryForm" method="get">
     //   <input type="text" name ="query" id="input-search" placeholder="Please enter search query"/>
