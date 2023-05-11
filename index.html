@@ -5,7 +5,6 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + Lit + TS</title>
-    <!-- <script type="module" src="/src/ia-search-main.ts"></script> -->
     <style>
       html {
         font-size: 10px; /* This is to match petabox's base font size */
@@ -52,8 +51,7 @@
   <body>
     <script type="module">
       import { html, render } from "lit-html";
-      import "./src/ia-search-main";
-      // search?query=title%3A%28arun%29%20AND%20creator%3A%28kumar%29%20AND%20description%3A%28the%29
+      import "./src/components/ia-search-main";
       var queryParam = decodeURIComponent(window.location.search);
       queryParam = new URLSearchParams(queryParam).get("query");
       const title = "Advanced Search Option";
