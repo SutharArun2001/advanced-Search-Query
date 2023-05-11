@@ -132,7 +132,7 @@ export class IaSearchMain extends LitElement {
           let value = str[1].trim().replace(/[[\]"'()/]/g,'');
           console.log(value)
           key = key.replace('-', '');
-          if (this.searchField.includes(key)) {
+          if (key) {
             if (key === 'date') {
               if (/TO/.test(value)) {
                 console.log(value);
