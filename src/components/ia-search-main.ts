@@ -2,75 +2,77 @@ import { LitElement, css, html } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
 import advancedSearchQuery from "advanced-search-query";
 import searchMainCss from '../css/ia-search-main.ts'
+import { 
+  date, 
+  mediaTypeOption, 
+  searchFieldOption,
+  searchFieldCondition,
+  years,
+  months
+ } from "../core/config/dropdown-fields.ts";
 
 @customElement("ia-search-main")
 export class IaSearchMain extends LitElement {
 
-  @property({ type: String }) title = "Hey there";
   @property({ type: String }) query = "";
+  @property({ type: String }) heading = ""
+
   @property({ type: String }) searchQuery = '';
 
   @property({ type: Array }) parasedQuery = [];
 
   @property({ type: Object }) parasedQueryToPck = {};
 
-  @property()
-  year = ["1940", "1941", "1942", "1943", "1944", "1945", "1946", "1947", "1948", "1949", "1950", "1951", "1952", "1953", "1954", "1955", "1956", "1957", "1958", "1959", "1960", "1961", "1962", "1963", "1964", "1965", "1966", "1967", "1968", "1969", "1970", "1971", "1972", "1973", "1974", "1975", "1976", "1977", "1978", "1979", "1980", "1981", "1982", "1983", "1984", "1985", "1986", "1987", "1988", "1989", "1990", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023"];
-
-  @property()
-  months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
-
-  @property()
-  date = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"];
-
-  // @property()
-  // searchField = ["name", "creator", "title", "description", "collection", "date", "date range","mediatype"];
-
-  @property()
-  searchOption = [["contains", "true"], ["is not contains", "false"]];
-
-  @property()
-  mediaTypeOption = ["account","audio","data","image","movies","web","text"]
-
-
-  
+  // dropdown properties
+  @property({ type: Array}) year = [''];
+  @property({ type: Array}) months = [''];
+  @property({ type: Array}) date = [''];
+  @property({ type: Array}) searchField = [''];
+  @property({ type: Array}) searchCondition = [['']];
+  @property({ type: Array}) mediaTypeOption = [''];
 
   @query("#search-field-container") private searchContainer!: HTMLElement;
 
-  @property()
-  searchField= {
-    name: true, 
-    creator: true, 
-    title: true, 
-    description: true, 
-    collection: true, 
-    date: true, 
-    daterange: true,
-    mediatype :true
-  }
+  // @property()
+  // searchField= {
+  //   name: true, 
+  //   creator: true, 
+  //   title: true, 
+  //   description: true, 
+  //   collection: true, 
+  //   date: true, 
+  //   daterange: true,
+  //   mediatype :true
+  // }
 
-  @property()
-  finalsearchField = {}
+  // @property()
+  // finalsearchField = {}
 
   constructor() {
     super();
+
+    // set dropdown values to properties
+    this.searchField = searchFieldOption; 
+    this.searchCondition = searchFieldCondition;
+    this.year = years;
+    this.months = months;
+    this.date = date;
+    this.mediaTypeOption = mediaTypeOption;
+
     this.parasedQuery = [];
     this.query = '';
     this.searchQuery = this.query;
   }
 
   firstUpdated() {
-
-    this.finalsearchField =  Object.keys(this.searchField).filter(key => this.searchField[key] === true);
-
-    console.log(this.finalsearchField)
-    let item:string;
-    for(item in this.finalsearchField){
-      console.log(this.finalsearchField[item]);
-    }
-    
     this.searchQuery = this.query;
     this.getKeyValue();
+    // this.finalsearchField =  Object.keys(this.searchField).filter(key => this.searchField[key] === true);
+    // console.log(this.finalsearchField)
+    // let item:string;
+    // for(item in this.finalsearchField){
+    //   console.log(this.finalsearchField[item]);
+    // }
     // this.addDateRangeSearchField();
     // this.inputSearchField.value = this.query;
     // this.myForm.onsubmit = this.submitForm
@@ -112,7 +114,6 @@ export class IaSearchMain extends LitElement {
       background: white;
       border-radius: 10px;
     }
-    
   `;
 
   /**
@@ -127,12 +128,13 @@ export class IaSearchMain extends LitElement {
       arr.map(
         (data) => {
           let str = data.split(':');
-          let key: string = str[0].trim();
+          console.log("field is present")
+          let key: string = str[0]?.trim();
           let isNegated: string = key[0] === '-' ? 'false' : 'true';
-          let value = str[1].trim().replace(/[[\]"'()/]/g,'');
-          console.log(value)
+          let value = str[1]?.trim().replace(/[[\]"'()/]/g,'');
           key = key.replace('-', '');
-          if (key) {
+
+          if (this.searchField.includes(key)) {
             if (key === 'date') {
               if (/TO/.test(value)) {
                 console.log(value);
@@ -154,7 +156,9 @@ export class IaSearchMain extends LitElement {
    */
   setSearchQuery() {
     // this.getKeyValue()
-    this.parasedQuery = [];
+    // var arr:any = []
+    this.parasedQuery.length = 0;
+
     var selectFields = this.searchContainer.querySelectorAll(".search-fields");
     selectFields.forEach(
       (element) => {
@@ -230,22 +234,23 @@ export class IaSearchMain extends LitElement {
   /**
    * To append options in select Field select box
    * @param {string} key - select option if key has value 
+   * @param {string[]} fields - select option if key has value 
    * @returns {HTMLOptionElement}
    */
-  getSearchOption(key?: string) {
-    console.log(this.finalsearchField)
-    this.finalsearchField =  Object.keys(this.searchField).filter(key => this.searchField[key] === true);
+  getOption(fields: String[],key?: string) {
+    // console.log(this.finalsearchField)
+    // this.finalsearchField =  Object.keys(this.searchField).filter(key => this.searchField[key] === true);
+    // var option = '<select class="select-field">';
+    // for(let item in this.finalsearchField){
+    //   option += `<option value="${this.finalsearchField[item]}" ${key === this.finalsearchField[item] ? 'selected' : ''}>${this.finalsearchField[item]}</option>`;
+    // }
+    // return option+`</select>`;
 
-    // return `<select class="select-field" >`+this.searchField
-    //   .map(
-    //     item =>
-    //       `<option value="${item}" ${key === item ? 'selected' : ''}>${item}</option>`
-    //   )+`</select>`;
-    var option = '<select class="select-field">';
-    for(let item in this.finalsearchField){
-      option += `<option value="${this.finalsearchField[item]}" ${key === this.finalsearchField[item] ? 'selected' : ''}>${this.finalsearchField[item]}</option>`;
-    }
-    return option+`</select>`;
+    return fields
+      .map(
+        item =>
+          `<option value="${item}" ${key === item ? 'selected' : ''}>${item}</option>`
+      );
   }
 
   /**
@@ -254,63 +259,13 @@ export class IaSearchMain extends LitElement {
    * @returns {HTMLOptionElement}
    */
   getSearchCondition(isNegated?: string) {
-    return `<select class="select-condition">`+this.searchOption
+    return `<select class="select-condition">`+this.searchCondition
       .map(
         item =>
           `<option value="${item[1]}" ${item[1] === isNegated ? 'selected' : ''}>${item[0]}</option>`
       )+`</select>`;
   }
 
-  getMediaTypes(value?: string){
-    return `<select class="select-value">
-    <option value = 'none'>Select MediaType</option>`+
-    this.mediaTypeOption
-    .map(
-      item =>
-        `<option value="${item}" ${item === value ? 'selected' : ''}>${item}</option>`
-    )+
-    `</select>`;
-  }
-
-  /**
-   * get list of year 
-   * @param {string} value - select option if value match with item
-   * @returns {HTMLOptionElement}
-   */
-  getYears(value?: string){
-    return this.year
-      .map(
-        (item) =>
-          `<option value="${item}" ${value?.trim() === item ? 'selected' : ''}>${item}</option>`
-      );
-  }
-  
-  /**
-   * get list of month 
-   * @param {string} value - select option if value match with item
-   * @returns {HTMLOptionElement}
-   */
-  getMonths(value?: String) {
-    return this.months
-      .map(
-        (item) =>
-          `<option value="${item}" ${value?.trim() === item ? 'selected' : ''}>${item}</option>`
-      );
-  }
-
-  /**
-   * get list of Dates 
-   * @param {string} value - select option if value match with item
-   * @returns {HTMLOptionElement} 
-   */
-  getDates(value?: String) {
-    console.log(value)
-    return this.date
-      .map(
-        (item) =>
-          `<option value="${item}" ${value?.trim() === item ? 'selected' : ''}>${item}</option>`
-      );
-  }
 
   /**
    * add new fields
@@ -324,7 +279,10 @@ export class IaSearchMain extends LitElement {
     const field = document.createElement("div");
     var inputFieldType = '';
     if(key === 'mediatype'){
-      inputFieldType = this.getMediaTypes(value);
+      inputFieldType = `<select class="select-value">
+      <option value = 'none'>Select MediaType</option>`
+      +this.getOption(this.mediaTypeOption,value)+
+      `</select>`;
     }else{
       inputFieldType = `
       <input 
@@ -336,9 +294,10 @@ export class IaSearchMain extends LitElement {
     }
     field.classList.add("search-fields");
     field.innerHTML = `<div>
-        ${this.getSearchOption(key)}
+        <select class="select-field" >
+        ${this.getOption(this.searchField,key)}
+        </select>
         ${this.getSearchCondition(isNegated)}
-      </select>
       `+inputFieldType+`
       </div>
       ${this.actionButton}
@@ -364,18 +323,20 @@ export class IaSearchMain extends LitElement {
     const field = document.createElement("div");
     field.classList.add("search-fields");
     field.innerHTML = `<div>
-        ${this.getSearchOption(key)}
+      <select class="select-field" >
+        ${this.getOption(this.searchField,key)}
+      </select>
       <select class="select-year" id="year" name="year">
         <option value="none">year</option>
-        ${this.getYears(splitValue[0])}
+        ${this.getOption(this.year,splitValue[0]?.trim())}
       </select>
       <select class="select-month" id="month" name="month">
         <option value="none">month</option>
-        ${this.getMonths(splitValue[1])}
+        ${this.getOption(this.months,splitValue[1]?.trim())}
       </select>
       <select class="select-date" id="date" name="date">
         <option value="none">date</option>
-        ${this.getDates(splitValue[2])}
+        ${this.getOption(this.date,splitValue[2]?.trim())}
       </select>
       </div>
       ${this.actionButton}
@@ -396,10 +357,11 @@ export class IaSearchMain extends LitElement {
    */
   get actionButton(): string {
     return `
-    <div>
-      <button class="add-field" >&#43;</button>
-      <button class="delete-field">Delete</button>
-    </div>`;
+      <div>
+        <button class="add-field" >&#43;</button>
+        <button class="delete-field">Delete</button>
+      </div>
+    `;
   }
 
   /**
@@ -409,6 +371,7 @@ export class IaSearchMain extends LitElement {
    */
   addDateRangeSearchField(value: String = ''): HTMLElement {
     const [from , to] = value.split('TO');
+    console.log(from,to);
     let yearFrom, monthFrom, dateFrom = '';
     let yearTo, monthTo, dateTo = '';
 
@@ -422,31 +385,33 @@ export class IaSearchMain extends LitElement {
     const field = document.createElement("div");
     field.classList.add("search-fields");
     field.innerHTML = `<div class="range">
-      ${this.getSearchOption(key)}
+      <select class="select-field" >
+        ${this.getOption(this.searchField,key)}
+      </select>
       <select class="select-year-from" id="yearFrom" name="yearFrom">
         <option value="none">year</option>
-        ${this.getYears(yearFrom)}
+        ${this.getOption(this.year,yearFrom?.trim())}
       </select>
       <select class="select-month-from" id="monthFrom" name="monthFrom">
         <option value="none">month</option>
-        ${this.getMonths(monthFrom)}
+        ${this.getOption(this.months,monthFrom?.trim())}
       </select>
       <select class="select-date-from" id="dateFrom" name="dateFrom">
         <option value="none">date</option>
-        ${this.getDates(dateFrom)}
+        ${this.getOption(this.date,dateFrom?.trim())}
       </select>
       <h3>TO</h3>
       <select class="select-year-to" id="yearTo" name="yearTo">
         <option value="none">year</option>
-        ${this.getYears(yearTo)}
+        ${this.getOption(this.year,yearTo?.trim())}
       </select>
       <select class="select-month-to" id="monthTos" name="monthTos">
         <option value="none">month</option>
-        ${this.getMonths(monthTo)}
+        ${this.getOption(this.months,monthTo?.trim())}
       </select>
       <select class="select-date-to" id="dateTo" name="dateTo">
         <option value="none">date</option>
-        ${this.getDates(dateTo)}
+        ${this.getOption(this.date,dateTo?.trim())}
       </select>
     </div>
     ${this.actionButton}
@@ -469,10 +434,9 @@ export class IaSearchMain extends LitElement {
   setEventListeners(field: HTMLElement) {
     field.querySelector(".select-field")?.addEventListener("change", () => {
       var selectFieldValue = (field.querySelector('.select-field') as HTMLInputElement).value;
-      this.finalsearchField =  Object.keys(this.searchField).filter(key => this.searchField[key] === true);
+      // this.finalsearchField =  Object.keys(this.searchField).filter(key => this.searchField[key] === true);
 
       if (selectFieldValue === 'date') {
-        console.log(field)
         this.deleteSearchField(field);
         this.addDateSearchField();
       } else if (selectFieldValue === 'date range') {
@@ -485,17 +449,17 @@ export class IaSearchMain extends LitElement {
         this.deleteSearchField(field);
         this.addSearchField(selectFieldValue);
       }
-    let item:string;
-
-      console.log(selectFieldValue);
-      console.log(this.searchField)
-      console.log(this.finalsearchField)
-      console.log(this.searchField[selectFieldValue] = false);
-      for(item in this.finalsearchField){
-        console.log(this.finalsearchField[item]);
-      }
+      // let item:string;
+      
+      // console.log(selectFieldValue);
+      // console.log(this.searchField)
+      // console.log(this.finalsearchField)
+      // console.log(this.searchField[selectFieldValue] = false);
+      // for(item in this.finalsearchField){
+      //   console.log(this.finalsearchField[item]);
+      // }
     });
-
+    
     field.querySelector(".delete-field")?.addEventListener("click", () => {
       this.deleteSearchField(field);
     });
@@ -507,7 +471,7 @@ export class IaSearchMain extends LitElement {
 
 
   render() {
-    return html`
+    return html`${this.heading}
     <div id="search-field-container">
       <h1>Select fields</h1>
     </div>
